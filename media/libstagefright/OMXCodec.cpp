@@ -1294,7 +1294,7 @@ static size_t getFrameSize(
 
 #ifdef QCOM_LEGACY_OMX
     case OMX_QCOM_COLOR_FormatYVU420SemiPlanar:
-        return (((width + 15) & -16) * ((height + 15) & -16) * 3) / 2;
+        return ALIGN(width, 16) * ALIGN(height, 16) * 3 / 2;
 #endif
 
 #ifdef SAMSUNG_CODEC_SUPPORT

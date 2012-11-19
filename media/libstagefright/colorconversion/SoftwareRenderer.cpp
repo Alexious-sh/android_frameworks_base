@@ -28,6 +28,10 @@
 #include <ui/GraphicBufferMapper.h>
 #include <gui/ISurfaceTexture.h>
 
+#ifdef QCOM_LEGACY_OMX
+#include <gralloc_priv.h>
+#endif
+
 namespace android {
 
 #ifdef QCOM_HARDWARE
@@ -83,7 +87,7 @@ SoftwareRenderer::SoftwareRenderer(
             halFormat = HAL_PIXEL_FORMAT_YCrCb_420_SP;
             bufWidth = (mCropWidth + 1) & ~1;
             bufHeight = (mCropHeight + 1) & ~1;
-            mAlign = ((mWidth + 15) & -16) * ((mHeight + 15) & -16);
+            mAlign = ALIGN(mWidth, 16) * ALIGN(mHeight, 16);
             break;
         }
 #endif
@@ -112,7 +116,11 @@ SoftwareRenderer::SoftwareRenderer(
             native_window_set_usage(
             mNativeWindow.get(),
             GRALLOC_USAGE_SW_READ_NEVER | GRALLOC_USAGE_SW_WRITE_OFTEN
-            | GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_EXTERNAL_DISP));
+            | GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_EXTERNAL_DISP
+#ifdef QCOM_LEGACY_OMX
+            | GRALLOC_USAGE_PRIVATE_ADSP_HEAP | GRALLOC_USAGE_PRIVATE_UNCACHED
+#endif
+            ));
 
     CHECK_EQ(0,
             native_window_set_scaling_mode(
